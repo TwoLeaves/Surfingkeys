@@ -219,7 +219,7 @@ function start(browser) {
     };
     if (window === top) {
         new Promise((r, j) => {
-            if (window.location.href === chrome.extension.getURL("/pages/options.html")) {
+            if (window.location.href === chrome.runtime.getURL("/pages/options.html")) {
                 import(/* webpackIgnore: true */ './pages/options.js').then((optionsLib) => {
                     optionsLib.default(
                         RUNTIME,

@@ -5,7 +5,7 @@ import { dispatchSKEvent, runtime, RUNTIME } from './common/runtime.js';
 import { start } from './content.js';
 
 function usePdfViewer() {
-    window.location.replace(chrome.extension.getURL("/pages/pdf_viewer.html") + "?r=" + document.URL);
+    window.location.replace(chrome.runtime.getURL("/pages/pdf_viewer.html") + "?r=" + document.URL);
 }
 
 function readText(text, options) {

@@ -239,7 +239,7 @@ module.exports = function(api) {
     });
     mapkey('yy', "#7Copy current page's URL", function() {
         var url = window.location.href;
-        if (url.indexOf(chrome.extension.getURL("/pages/pdf_viewer.html")) === 0) {
+        if (url.indexOf(chrome.runtime.getURL("/pages/pdf_viewer.html")) === 0) {
             url = window.location.search.substr(3);
         }
         Clipboard.write(url);

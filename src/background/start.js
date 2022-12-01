@@ -1,26 +1,26 @@
 import {
     filterByTitleOrUrl,
-} from '../content_scripts/common/utils.js';
+} from '../common/utils.js';
 function request(url, onReady, headers, data, onException) {
     headers = headers || {};
-    return new Promise(function(acc, rej) {
-        var xhr = new XMLHttpRequest();
-        var method = (data !== undefined) ? "POST" : "GET";
-        xhr.open(method, url);
-        for (var h in headers) {
-            xhr.setRequestHeader(h, headers[h]);
-        }
-        xhr.onload = function() {
-            // status from file:/// is always 0
-            if (xhr.status === 200 || xhr.status === 0) {
-                acc(xhr.responseText);
-            } else {
-                rej(xhr.status);
-            }
-        };
-        xhr.onerror = rej.bind(null, xhr);
-        xhr.send(data);
-    }).then(onReady).catch(function(exp) {
+    const CHARTSET_RE = /(?:charset|encoding)\s*=\s*['"]? *([\w\-]+)/i;
+
+    fetch(url, {
+        method: (data !== undefined) ? "POST" : "GET",
+        headers,
+        body: data,
+    }).then(res => {
+        const cs = res.headers.get('content-type').match(CHARTSET_RE);
+
+        return Promise.all([
+            Promise.resolve(cs[1]),
+            res.arrayBuffer()
+        ])
+    }).then(res => {
+        const decoder = new TextDecoder(res[0]);
+        const content = decoder.decode(res[1]);
+        onReady(content);
+    }).catch(exp => {
         onException && onException(exp);
     });
 }
@@ -303,9 +303,14 @@ function start(browser) {
     chrome.tabs.onRemoved.addListener(removeTab);
     function _setScrollPos_bg(tabId) {
         if (tabMessages.hasOwnProperty(tabId)) {
-            var message = tabMessages[tabId];
-            chrome.tabs.executeScript(tabId, {
-                code: "_setScrollPos(" + message.scrollLeft + ", " + message.scrollTop + ")"
+            const message = tabMessages[tabId];
+            chrome.scripting.executeScript({
+                target: {
+                    tabId,
+                },
+                func: () => {
+                    _setScrollPos(message.scrollLeft, message.scrollTop);
+                },
             });
             delete tabMessages[tabId];
         }
@@ -529,7 +534,7 @@ function start(browser) {
         loadSettings('blocklist', function(data) {
             var origin = ".*";
             var senderOrigin = sender.origin || new URL(getSenderUrl(sender)).origin;
-            if (chrome.extension.getURL("/").indexOf(senderOrigin) !== 0 && senderOrigin !== "null") {
+            if (chrome.runtime.getURL("/").indexOf(senderOrigin) !== 0 && senderOrigin !== "null") {
                 origin = senderOrigin;
             }
             if (data.blocklist.hasOwnProperty(origin)) {
@@ -548,7 +553,7 @@ function start(browser) {
     };
     self.toggleMouseQuery = function(message, sender, sendResponse) {
         loadSettings('mouseSelectToQuery', function(data) {
-            if (sender.tab && sender.tab.url.indexOf(chrome.extension.getURL("/")) !== 0) {
+            if (sender.tab && sender.tab.url.indexOf(chrome.runtime.getURL("/")) !== 0) {
                 var mouseSelectToQuery = data.mouseSelectToQuery || [];
                 var idx = mouseSelectToQuery.indexOf(message.origin);
                 if (idx === -1) {
@@ -1099,12 +1104,16 @@ function start(browser) {
     self.openLink = function(message, sender, sendResponse) {
         var url = normalizeURL(message.url);
         if (url.startsWith("javascript:")) {
-            chrome.tabs.executeScript(sender.tab.id, {
+            chrome.scripting.executeScript({
+                target: {
+                    tabId: sender.tab.id,
+                },
+                // TODO: to be supported https://github.com/w3c/webextensions/issues/279#issuecomment-1255843961
                 code: url.substr(11)
             });
         } else {
             if (message.tab.tabbed) {
-                if (sender.frameId !== 0 && chrome.extension.getURL("pages/frontend.html") === sender.url
+                if (sender.frameId !== 0 && chrome.runtime.getURL("pages/frontend.html") === sender.url
                     || !sender.tab) {
                     // if current call was made from Omnibar, the sender.tab may be stale,
                     // as sender was bound when port was created.
@@ -1159,7 +1168,7 @@ function start(browser) {
         }
     };
     self.setSurfingkeysIcon = function(message, sender, sendResponse) {
-        chrome.browserAction.setIcon({
+        chrome.action.setIcon({
             path: (message.status ? 'icons/48-x.png' : 'icons/48.png'),
             tabId: (sender.tab ? sender.tab.id : undefined)
         });
@@ -1189,14 +1198,19 @@ function start(browser) {
 
     };
     self.nextFrame = function(message, sender, sendResponse) {
-        var tid = sender.tab.id;
-        chrome.tabs.executeScript(tid, {
-            allFrames: true,
-            matchAboutBlank: true,
-            runAt: "document_start",
-            code: "typeof(getFrameId) === 'function' && getFrameId()"
+        const tid = sender.tab.id;
+        chrome.scripting.executeScript({
+            target: {
+                allFrames: true,
+                tabId: tid,
+            },
+            func: () => {
+                return typeof(getFrameId) === 'function' ? getFrameId() : 0;
+            },
         }, function(framesInTab) {
-            framesInTab = framesInTab.filter(function(frameId) {
+            framesInTab = framesInTab.map((res) => {
+                return res.result;
+            }).filter((frameId) => {
                 return frameId;
             });
 
@@ -1326,11 +1340,13 @@ function start(browser) {
         chrome.downloads.download({ url: message.url, saveAs: message.saveAs });
     };
     self.executeScript = function(message, sender, sendResponse) {
-        chrome.tabs.executeScript(sender.tab.id, {
-            frameId: sender.frameId,
+        chrome.scripting.executeScript({
+            target: {
+                tabId: sender.tab.id,
+                frameIds: [sender.frameId]
+            },
+            // TODO: to be supported https://github.com/w3c/webextensions/issues/279#issuecomment-1255843961
             code: message.code,
-            matchAboutBlank: true,
-            file: message.file
         }, function(result) {
             _response(message, sendResponse, {
                 response: result

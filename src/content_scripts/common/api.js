@@ -3,7 +3,6 @@ import Trie from './trie';
 import Mode from './mode';
 import KeyboardUtils from './keyboardUtils';
 import {
-    LOG,
     actionWithSelectionPreserved,
     constructSearchURL,
     getBrowserName,
@@ -22,6 +21,9 @@ import {
     tabOpenLink,
     toggleQuote,
 } from './utils.js';
+import {
+    LOG,
+} from '../../common/utils.js';
 
 function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
 
@@ -500,7 +502,7 @@ function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
         });
         mapkey(';s', 'Toggle PDF viewer from SurfingKeys', function() {
             var pdfUrl = window.location.href;
-            if (pdfUrl.indexOf(chrome.extension.getURL("/pages/pdf_viewer.html")) === 0) {
+            if (pdfUrl.indexOf(chrome.runtime.getURL("/pages/pdf_viewer.html")) === 0) {
                 pdfUrl = window.location.search.substr(3);
                 chrome.storage.local.set({"noPdfViewer": 1}, function() {
                     window.location.replace(pdfUrl);

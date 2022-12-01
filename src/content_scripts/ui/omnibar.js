@@ -5,11 +5,9 @@ import { debounce } from 'lodash';
 import {
     constructSearchURL,
     createElementWithContent,
-    filterByTitleOrUrl,
     getBrowserName,
     htmlEncode,
     parseAnnotation,
-    regexFromString,
     scrollIntoViewIfNeeded,
     setSanitizedContent,
     showBanner,
@@ -17,6 +15,10 @@ import {
     timeStampString,
     toggleQuote,
 } from '../common/utils.js';
+import {
+    regexFromString,
+    filterByTitleOrUrl,
+} from '../../common/utils.js';
 import { RUNTIME, runtime } from '../common/runtime.js';
 
 const separator = '➤';

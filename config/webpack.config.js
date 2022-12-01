@@ -21,12 +21,10 @@ function modifyManifest(browser, mode, buffer) {
     } else if (browser === "safari") {
         manifest.incognito = "split";
         manifest.options_page = "pages/options.html";
-        manifest.background.persistent = false;
     } else {
         manifest.permissions.push("proxy");
         manifest.permissions.push("tts");
         manifest.permissions.push("downloads.shelf");
-        manifest.background.persistent = false;
         manifest.incognito = "split";
         manifest.options_page = "pages/options.html";
 
