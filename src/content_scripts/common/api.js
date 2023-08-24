@@ -746,6 +746,7 @@ function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
     mapkey("cq", '#7Query word with Hints', function() {
         hints.create(runtime.conf.textAnchorPat, function (element) {
             var word = element[2].trim().replace(/[^A-z].*$/, "");
+            browser.readText(word);
             var b = getTextNodePos(element[0], element[1], element[2].length);
             if (document.dictEnabled !== undefined) {
                 if (document.dictEnabled) {
