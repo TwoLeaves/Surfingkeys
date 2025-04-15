@@ -24,6 +24,13 @@ jobs:
     - name: npm install and build
       run: |
         npm install
-        npm run build
+        browser=chrome npm run build:prod
+        ls -lha dist
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: |
+          dist/production/chrome
       env:
         CI: true
