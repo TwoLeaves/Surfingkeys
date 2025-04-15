@@ -380,7 +380,7 @@ div.sk_tab_hint {
     font-size: 14px;
 }
 #sk_bubble .sk_bubble_content {
-    overflow-y: scroll;
+    overflow-y: auto;
     background-size: 3px 100%;
     background-position: 100%;
     background-repeat: no-repeat;
