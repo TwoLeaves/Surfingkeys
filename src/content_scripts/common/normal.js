@@ -545,13 +545,13 @@ function createNormal(insert) {
                 scrollNode.skScrollBy(0, -runtime.conf.scrollStepSize);
                 break;
             case 'pageDown':
-                scrollNode.skScrollBy(0, Math.round(size[1] / 2));
+                scrollNode.skScrollBy(0, Math.round(size[1] / 2 * runtime.conf.pageScrollStepFactor));
                 break;
             case 'fullPageDown':
                 scrollNode.skScrollBy(0, size[1]);
                 break;
             case 'pageUp':
-                scrollNode.skScrollBy(0, -Math.round(size[1] / 2));
+                scrollNode.skScrollBy(0, -Math.round(size[1] / 2 * runtime.conf.pageScrollStepFactor));
                 break;
             case 'fullPageUp':
                 scrollNode.skScrollBy(0, -size[1]);
