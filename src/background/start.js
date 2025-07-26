@@ -321,6 +321,13 @@ function start(browser) {
         }
     }
 
+    self.sendExtensionMessage = function(message, sender, sendResponse) {
+      const p = chrome.runtime.sendMessage(message.extensionId, message.message);
+      if (p) {
+        p.catch((e) => {})
+      }
+    };
+
     function sendTabMessage(tabId, frameId, message) {
         const opts = (frameId === -1) ? undefined : {frameId: frameId};
         // use catch to suppress Uncaught (in promise) Error on sending message to unsupported tabs like chrome://
