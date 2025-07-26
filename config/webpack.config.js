@@ -39,7 +39,8 @@ function modifyManifest(browser, mode, buffer) {
             "service_worker": "background.js"
         };
         manifest.host_permissions = [
-            "<all_urls>"
+            "<all_urls>",
+            "chrome://*/"
         ];
         manifest.web_accessible_resources = [
             {
