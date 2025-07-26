@@ -3078,6 +3078,7 @@
       display:block;
       width:100%;
       height:100%;
+      filter:invert(91%) hue-rotate(180deg);
     }
 
 [hidden]:is(:is(.pdfViewer .canvasWrapper) canvas){
