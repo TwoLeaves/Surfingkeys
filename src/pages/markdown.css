@@ -5,9 +5,13 @@
 
 .description {
     border-bottom: 1px solid #777;
+    display: none;
+}
+.content {
+    background: none !important;
 }
 .markdown-body {
-    padding: 20px 10%;
+    padding: 20px 20%;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     line-height: 1.5;
