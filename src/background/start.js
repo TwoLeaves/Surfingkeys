@@ -328,6 +328,26 @@ function start(browser) {
       }
     };
 
+    self.sendExtensionMessageCallback = function(message, sender, sendResponse) {
+      const timeoutMs = message.timeout || 5000;
+      const messagePromise = chrome.runtime.sendMessage(
+        message.extensionId,
+        message.message
+      );
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ error: 'Timeout: No response from extension', timeout: true });
+        }, timeoutMs);
+      });
+      Promise.race([messagePromise, timeoutPromise])
+        .then((response) => {
+          sendResponse({ success: true, data: response });
+        })
+        .catch((error) => {
+          sendResponse({ success: false, error: error.message || 'Failed to send message' });
+        });
+    };
+
     function sendTabMessage(tabId, frameId, message) {
         const opts = (frameId === -1) ? undefined : {frameId: frameId};
         // use catch to suppress Uncaught (in promise) Error on sending message to unsupported tabs like chrome://
